@@ -28,6 +28,7 @@ func newList()(*linkedList) {
 }
 
 func (list *linkedList) insertNode(value int, start *Node) {
+  //fmt.Println("hi")
   new := NewNode(value)
   temp := start
   if temp == nil {
@@ -51,8 +52,8 @@ func (list *linkedList) printList(start *Node) {
 func main() {
   var len, num int
   start := newList()
-  list := newList{}
-  fmt.Println("Enter the linke4d list length : ")
+  list := linkedList{}
+  fmt.Println("Enter the linked list length : ")
   fmt.Scanln(&len)
   fmt.Println("Enter the values : ")
   for i := 0; i < len; i ++ {
