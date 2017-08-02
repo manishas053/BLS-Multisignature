@@ -19,14 +19,14 @@ func NewNode(value int)(*Node) {
   return node
 }
 
-func newList()(*Node) {
+func newList()(*linkedList) {
   list := &linkedList {
     start : nil,
   }
   return list
 }
 
-func insertNode(value int, start int) {
+func (l *linkedList) insertNode(value int, start *Node) {
   new := NewNode(value)
   temp := start
   if temp == nil {
@@ -39,7 +39,7 @@ func insertNode(value int, start int) {
   }
 }
 
-func printList() {
+func printList(start *Node) {
   temp := start
   for temp != nil {
     fmt.Printf("%d -> ", temp)
@@ -49,13 +49,14 @@ func printList() {
 
 func main() {
   var len, num int
-  l := linkedList{}
+  start = newList()
+  //l := List{}
   fmt.Println("Enter the linke4d list length : ")
   fmt.Scanln(&len)
   fmt.Println("Enter the values : ")
   for i := 0; i < len; i ++ {
     fmt.Scanln(&num)
-    l.insertNode(num)
+    l.insertNode(num, start)
   }
   l.printList()
 }
