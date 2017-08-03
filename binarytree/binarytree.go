@@ -49,7 +49,7 @@ func (tree *binaryTree) hasRightChild(parent *treeNode) bool {
 func (tree *binaryTree) insertNode(parent *treeNode, value int) {
   if value < parent.value {
     if tree.hasLeftChild(parent) {
-      tree.insertNode(parentleftchild, value)
+      tree.insertNode(parent.leftchild, value)
     }else {
       parent.leftchild = newNode(parent, value)
     }
@@ -77,7 +77,7 @@ func main() {
   fmt.Println("Enter values : ")
   fmt.Scanln(&value)
   if tree.root == nil {
-    root = value
+    tree.root = value
   }else {
     tree.insertNode(tree.root, value)
   }
