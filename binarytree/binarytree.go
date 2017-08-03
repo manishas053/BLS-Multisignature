@@ -1,15 +1,16 @@
-///////////////////////////////////////////////////////
-//                                                  //
-//   Author   : Maneesha S                         //
-//   Date     : 3 / 8 / 2017                      //
-//   Program  : Binary Tree in golang            //
-//                                              //
-/////////////////////////////////////////////////
+//;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+//                                                 ;;
+//   Author   : Maneesha S                         ;;
+//   Date     : 3 / 8 / 2017                       ;;
+//   Program  : Binary Tree in golang              ;;
+//                                                 ;;
+//;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 package main
 
 import "fmt"
 
+//defining a tree node structure
 type treeNode struct{
   value int
   leftchild *treeNode
@@ -17,12 +18,12 @@ type treeNode struct{
   parent *treeNode
 }
 
+//defining a binary tree structure
 type binaryTree struct{
   root *treeNode
 }
 
-
-//function to create an object for a node
+//function to create a new tree node
 func newNode(parent *treeNode, value int) (*treeNode) {
   newNode := &treeNode{
     value : value,
@@ -33,7 +34,6 @@ func newNode(parent *treeNode, value int) (*treeNode) {
   return newNode
 }
 
-
 //function to create an empty tree
 func newTree() (*binaryTree) {
   newTree := &binaryTree{
@@ -42,28 +42,25 @@ func newTree() (*binaryTree) {
   return newTree
 }
 
-
-//function to check if a node has leftchild
+//function to check if the tree node has a left child
 func (tree *binaryTree) hasLeftChild(parent *treeNode) bool {
   if parent.leftchild != nil {
     return true
     }else {
       return false
-      }
+    }
 }
 
-
-//function to check if a node has right child
+//function to check if the node has a right child
 func (tree *binaryTree) hasRightChild(parent *treeNode) bool {
   if parent.rightchild != nil {
     return true
     }else {
       return false
-      }
+    }
 }
 
-
-//function to insert node into tree
+//function to insert the node into tree
 func (tree *binaryTree) insertNode(parent *treeNode, value int) {
   if value < parent.value {
     if tree.hasLeftChild(parent) {
@@ -80,17 +77,17 @@ func (tree *binaryTree) insertNode(parent *treeNode, value int) {
   }
 }
 
-
 //prints the binary tree
-func (tree *binaryTree) printInorder(node *treeNode) {
+func (tree *binaryTree) printPreOrder(node *treeNode) {
   if node == nil {
     return
   }
   fmt.Printf("%d\n", node.value)
-  tree.printInorder(node.leftchild)
-  tree.printInorder(node.rightchild)
+  tree.printPreOrder(node.leftchild)
+  tree.printPreOrder(node.rightchild)
 }
 
+//main function
 func main() {
   var value, limit int
   tree := newTree()
@@ -103,7 +100,8 @@ func main() {
       tree.root = newNode(nil, value)
     }else {
       tree.insertNode(tree.root, value)
+    }
   }
-}
-  tree.printInorder(tree.root)
+  fmt.Println("The binary tree is : ")
+  tree.printPreOrder(tree.root)
 }
