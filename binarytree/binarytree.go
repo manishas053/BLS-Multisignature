@@ -1,3 +1,11 @@
+///////////////////////////////////////////////////////
+//                                                  //
+//   Author   : Maneesha S                         //
+//   Date     : 3 / 8 / 2017                      //
+//   Program  : Binary Tree in golang            //
+//                                              //
+/////////////////////////////////////////////////
+
 package main
 
 import "fmt"
@@ -13,7 +21,9 @@ type binaryTree struct{
   root *treeNode
 }
 
-func newNode(parent, value int) (*treeNode) {
+
+//function to create an object for a node
+func newNode(parent *treeNode, value int) (*treeNode) {
   newNode := &treeNode{
     value : value,
     leftchild : nil,
@@ -23,6 +33,8 @@ func newNode(parent, value int) (*treeNode) {
   return newNode
 }
 
+
+//function to create an empty tree
 func newTree() (*binaryTree) {
   newTree := &binaryTree{
     root : nil,
@@ -30,6 +42,8 @@ func newTree() (*binaryTree) {
   return newTree
 }
 
+
+//function to check if a node has leftchild
 func (tree *binaryTree) hasLeftChild(parent *treeNode) bool {
   if parent.leftchild != nil {
     return true
@@ -38,6 +52,8 @@ func (tree *binaryTree) hasLeftChild(parent *treeNode) bool {
       }
 }
 
+
+//function to check if a node has right child
 func (tree *binaryTree) hasRightChild(parent *treeNode) bool {
   if parent.rightchild != nil {
     return true
@@ -46,6 +62,8 @@ func (tree *binaryTree) hasRightChild(parent *treeNode) bool {
       }
 }
 
+
+//function to insert node into tree
 func (tree *binaryTree) insertNode(parent *treeNode, value int) {
   if value < parent.value {
     if tree.hasLeftChild(parent) {
@@ -62,13 +80,15 @@ func (tree *binaryTree) insertNode(parent *treeNode, value int) {
   }
 }
 
-func printInorder(node *treeNode) {
+
+//prints the binary tree
+func (tree *binaryTree) printInorder(node *treeNode) {
   if node == nil {
     return
   }
   fmt.Println("%d\n", node.value)
-  printInorder(node.leftchild)
-  printInorder(node.rightchild)
+  tree.printInorder(node.leftchild)
+  tree.printInorder(node.rightchild)
 }
 
 func main() {
