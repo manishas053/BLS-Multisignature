@@ -86,20 +86,24 @@ func (tree *binaryTree) printInorder(node *treeNode) {
   if node == nil {
     return
   }
-  fmt.Println("%d\n", node.value)
+  fmt.Printf("%d\n", node.value)
   tree.printInorder(node.leftchild)
   tree.printInorder(node.rightchild)
 }
 
 func main() {
-  var value int
+  var value, limit int
   tree := newTree()
+  fmt.Println("Enter number of nodes : ")
+  fmt.Scanln(&limit)
   fmt.Println("Enter values : ")
-  fmt.Scanln(&value)
-  if tree.root == nil {
-    tree.root = value
-  }else {
-    tree.insertNode(tree.root, value)
+  for i := 0; i < limit; i ++ {
+    fmt.Scanln(&value)
+    if tree.root == nil {
+      tree.root = newNode(nil, value)
+    }else {
+      tree.insertNode(tree.root, value)
   }
+}
   tree.printInorder(tree.root)
 }
