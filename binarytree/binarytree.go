@@ -46,7 +46,7 @@ func newTree() (*binaryTree) {
 func (tree *binaryTree) hasLeftChild(parent *treeNode) bool {
   if parent.leftchild != nil {
     return true
-    }else {
+    } else {
       return false
     }
 }
@@ -55,7 +55,7 @@ func (tree *binaryTree) hasLeftChild(parent *treeNode) bool {
 func (tree *binaryTree) hasRightChild(parent *treeNode) bool {
   if parent.rightchild != nil {
     return true
-    }else {
+    } else {
       return false
     }
 }
@@ -65,13 +65,13 @@ func (tree *binaryTree) insertNode(parent *treeNode, value int) {
   if value < parent.value {
     if tree.hasLeftChild(parent) {
       tree.insertNode(parent.leftchild, value)
-    }else {
+    } else {
       parent.leftchild = newNode(parent, value)
     }
-  }else {
+  } else {
     if tree.hasRightChild(parent) {
       tree.insertNode(parent.rightchild, value)
-    }else {
+    } else {
       parent.rightchild = newNode(parent, value)
     }
   }
