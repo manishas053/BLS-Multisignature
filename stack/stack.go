@@ -1,17 +1,29 @@
+//;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+//                                                                    ;;
+//  Author    : Maneesha S                                            ;;
+//  Date      : 4 / 8 / 2017                                          ;;
+//  Program   : Stack implementation using linked list in golang      ;;
+//                                                                    ;;
+//;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 package main
 
 import "fmt"
 
+//defining a stack node structure
 type Node struct {
   value int
   next *Node
   prev *Node
 }
 
+//defining a stack structure
 type Stack struct {
   start *Node
 }
 
+//function to create a new node
 func newNode(node *Node, value int) (*Node) {
   newNode := &Node{
     value : value,
@@ -21,6 +33,7 @@ func newNode(node *Node, value int) (*Node) {
   return newNode
 }
 
+//function to create a new stack
 func newStack() (*Stack) {
   newStack := &Stack{
     start : nil,
@@ -28,6 +41,7 @@ func newStack() (*Stack) {
   return newStack
 }
 
+//function to push elements into the stack
 func (stack *Stack) push(value int) {
   head := stack.start
   if head == nil {
@@ -40,6 +54,7 @@ func (stack *Stack) push(value int) {
   }
 }
 
+//function to pop elements from the stack
 func (stack *Stack) pop() {
   head := stack.start
   if head == nil {
@@ -56,6 +71,7 @@ func (stack *Stack) pop() {
   }
 }
 
+//main function
 func main() {
   var limit, num int
   stack := newStack()
