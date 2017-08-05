@@ -1,3 +1,12 @@
+//;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+//                                                                          ;;
+//  Author  :  Maneesha S                                                   ;;
+//  Date    :  5 / 8 / 2017                                                 ;;
+//  Program : Binary heap implementation in golang                          ;;
+//                                                                          ;;
+//;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 package main
 
 import (
@@ -10,35 +19,40 @@ func percDown(pos int, heap []int) []int {
   if pos < 0 {
     return heap
   }
-  if heap[2 * pos] < heap[(2 * pos) + 1] {
-    if heap[pos] > heap[2 * pos] {
-      heap[pos], heap[2 * pos] = swap(heap[pos], heap[2 * pos])
-    }
-  } else {
-    if heap[pos] > heap[(2 * pos) + 1] {
-      heap[pos], heap[(2 * pos) + 1] = swap(heap[pos], heap[(2 * pos) + 1])
-    }
+  if ((2 * pos) < len(heap)) || (((2 * pos) + 1) < len(heap)) {
+    if ((heap[2 * pos] == 0) && (heap[(2 * pos) + 1] == 0)) {
+      return heap
+      } else {
+        if ((heap[2 * pos] < heap[(2 * pos) + 1] )) {
+          if heap[pos] > heap[2 * pos] {
+            heap[pos], heap[2 * pos] = swap(heap[pos], heap[2 * pos])
+          }
+        } else {
+          if ((heap[((2 * pos) + 1)] != 0) && ((2 * pos) + 1) < len(heap)) {
+            if heap[pos] > heap[(2 * pos) + 1] {
+              heap[pos], heap[(2 * pos) + 1] = swap(heap[pos], heap[(2 * pos) + 1])
+            }
+          }
+        }
+      }
   }
-  return heap
+return heap
 }
 
 //function to delete a node from the heap
 func delete(num int, heap []int) []int {
   var i, pos int
-  //fmt.Println(len(heap))
-  for i := 0; i <= len(heap); i ++ {
+  for i := 1; i < len(heap); i ++ {
     if heap[i] == num {
       pos = i
-      //fmt.Println(pos)
     }
   }
-  i = 1
-  for heap[(2 * i) + 1] != 0 {
-    i = i + 1
+  i = len(heap)
+  for heap[i - 1] == 0 {
+    i --
   }
-  fmt.Println(heap[(2 * (i - 1)) + 1])
-  heap[pos] = heap[(2 * (i - 1) + 1)]
-  fmt.Println(heap[pos])
+  heap[pos] = heap[i - 1]
+  heap[i - 1] = 0
   heap = percDown(pos, heap)
   return heap
 }
