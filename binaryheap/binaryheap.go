@@ -25,16 +25,19 @@ func percDown(pos int, heap []int) []int {
 //function to delete a node from the heap
 func delete(num int, heap []int) []int {
   var i, pos int
+  //fmt.Println(len(heap))
   for i := 0; i <= len(heap); i ++ {
     if heap[i] == num {
       pos = i
+      //fmt.Println(pos)
     }
   }
   i = 1
   for heap[(2 * i) + 1] != 0 {
     i = i + 1
   }
-  heap[pos] = heap[i]
+  fmt.Println(heap[(2 * (i - 1)) + 1])
+  heap[pos] = heap[(2 * (i - 1) + 1)]
   fmt.Println(heap[pos])
   heap = percDown(pos, heap)
   return heap
