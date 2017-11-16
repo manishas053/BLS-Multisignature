@@ -4,6 +4,7 @@ This repo contains the implementation of BLS Multisignature scheme(https://mediu
 PBC Library is a free portable C library built on the GMP library that performs the mathematical operations underlying pairing based cryptosystems. It provides routines such as elliptic curve generation, elliptic curve arithmetic and pairing computations. Programs using the PBC library should include the file pbc.h and linked against the PBC library and GMP library.
 
 You can download PBC library from https://crypto.stanford.edu/pbc/ and GMP library from https://gmplib.org/
+
 For compiling and installing libraries 
 
  $ ./configure
