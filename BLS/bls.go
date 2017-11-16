@@ -1,3 +1,8 @@
+// This example computes and verifies a Boneh-Lynn-Shacham signature in a simulated
+// conversation between Alice and Bob.
+
+
+
 package main
 
 import (
@@ -7,14 +12,13 @@ import (
 
 )
 
-// messageData represents a signed message sent over the network
+// MessageData represents a signed message sent over the network
 type messageData struct {
   message   string
   signature []byte
 }
 
-// This example computes and verifies a Boneh-Lynn-Shacham signature in a
-// simulated conversation between Alice and Bob.
+
 func main() {
   // The authority generates system parameters
   params := pbc.GenerateA(160, 512)
@@ -25,13 +29,10 @@ func main() {
   sharedParams := params.String()
   sharedG := g.Bytes()
 
-  // Channel for messages. Normally this would be a network connection.
+  // Channel for messages
   messageChannel := make(chan *messageData)
 
-  // Channel for public key distribution. This might be a secure out-of-band
-  // channel or something like a web of trust. The public key only needs to
-  // be transmitted and verified once. The best way to do this is beyond the
-  // scope of this example.
+  // Channel for public key distribution
   keyChannel := make(chan []byte)
   keyChannel2 := make(chan []byte)
   keyChannel3 := make(chan []byte)
@@ -49,22 +50,22 @@ func main() {
 
 }
 
+
 // Alice generates a keypair and signs a message
 func alice(sharedParams string, sharedG []byte, messageChannel chan *messageData, keyChannel chan []byte, keyChannel2 chan []byte, keyChannel3 chan []byte, finished chan bool) {
-  //var signature [10] *pbc.Element
   // Alice loads the system parameters
   pairing, _ := pbc.NewPairingFromString(sharedParams)
   g := pairing.NewG2().SetBytes(sharedG)
 
-  // Generate keypair (x, g^x)
+  // Generate keypairs (x, g^x)
   privKey := pairing.NewZr().Rand()
-  private2 := pairing.NewZr().Rand()
-  private3 := pairing.NewZr().Rand()
   pubKey := pairing.NewG2().PowZn(g, privKey)
+  private2 := pairing.NewZr().Rand()
   public2 := pairing.NewG2().PowZn(g, private2)
+  private3 := pairing.NewZr().Rand()
   public3 := pairing.NewG2().PowZn(g, private3)
 
-  // Send public key to Bob
+  // Send public keys to Bob
   keyChannel <- pubKey.Bytes()
   keyChannel2 <- public2.Bytes()
   keyChannel3 <- public3.Bytes()
@@ -77,9 +78,9 @@ func alice(sharedParams string, sharedG []byte, messageChannel chan *messageData
   signature2 := pairing.NewG2().PowZn(h, private2)
   signature3 := pairing.NewG2().PowZn(h, private3)
 
+  // Aggregate the signatures
   aggregate1 := pairing.NewG2().Add(signature1, signature2)
   aggregate_signature := pairing.NewG2().Add(aggregate1, signature3)
-
 
   // Send the message and signature to Bob
   messageChannel <- &messageData{message: message, signature: aggregate_signature.Bytes()}
@@ -87,14 +88,14 @@ func alice(sharedParams string, sharedG []byte, messageChannel chan *messageData
   finished <- true
 }
 
+
 // Bob verifies a message received from Alice
 func bob(sharedParams string, sharedG []byte, messageChannel chan *messageData, keyChannel chan []byte, keyChannel2 chan []byte, keyChannel3 chan []byte, finished chan bool) {
-
   // Bob loads the system parameters
   pairing, _ := pbc.NewPairingFromString(sharedParams)
   g := pairing.NewG2().SetBytes(sharedG)
 
-  // Bob receives Alice's public key (and presumably verifies it manually)
+  // Bob receives Alice's public keys
   pubKey := pairing.NewG2().SetBytes(<-keyChannel)
   public2 := pairing.NewG2().SetBytes(<-keyChannel2)
   public3 := pairing.NewG2().SetBytes(<-keyChannel3)
