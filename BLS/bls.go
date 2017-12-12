@@ -1,7 +1,8 @@
-// This example computes and verifies a Boneh-Lynn-Shacham signature in a simulated
-// conversation between Alice and Bob.
+/*
 
+Our prototype implementation of BLS multisignature.
 
+*/
 
 package main
 
