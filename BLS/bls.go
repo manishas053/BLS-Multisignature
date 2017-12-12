@@ -9,7 +9,6 @@ import (
   "crypto/sha256"
   "fmt"
   "github.com/Nik-U/pbc"
-
 )
 
 // MessageData represents a signed message sent over the network
@@ -25,15 +24,15 @@ func main() {
   pairing := params.NewPairing()
   g := pairing.NewG2().Rand()
 
-  // The authority distributes params and g to Alice and Bob
+  // The authority distributes system parameters params and generator g to Alice and Bob
   sharedParams := params.String()
   sharedG := g.Bytes()
 
   // Channel for messages
   messageChannel := make(chan *messageData)
 
-  // Channel for public key distribution
-  keyChannel := make(chan []byte)
+  // Channels for public key distribution
+  keyChannel1 := make(chan []byte)
   keyChannel2 := make(chan []byte)
   keyChannel3 := make(chan []byte)
 
@@ -41,8 +40,8 @@ func main() {
   finished := make(chan bool)
 
   // Simulate the conversation participants
-  go alice(sharedParams, sharedG, messageChannel, keyChannel, keyChannel2, keyChannel3, finished)
-  go bob(sharedParams, sharedG, messageChannel, keyChannel,keyChannel2, keyChannel3, finished)
+  go alice(sharedParams, sharedG, messageChannel, keyChannel1, keyChannel2, keyChannel3, finished)
+  go bob(sharedParams, sharedG, messageChannel, keyChannel1,keyChannel2, keyChannel3, finished)
 
   // Wait for the communication to finish
   <-finished
@@ -52,29 +51,29 @@ func main() {
 
 
 // Alice generates a keypair and signs a message
-func alice(sharedParams string, sharedG []byte, messageChannel chan *messageData, keyChannel chan []byte, keyChannel2 chan []byte, keyChannel3 chan []byte, finished chan bool) {
+func alice(sharedParams string, sharedG []byte, messageChannel chan *messageData, keyChannel1 chan []byte, keyChannel2 chan []byte, keyChannel3 chan []byte, finished chan bool) {
   // Alice loads the system parameters
   pairing, _ := pbc.NewPairingFromString(sharedParams)
   g := pairing.NewG2().SetBytes(sharedG)
 
   // Generate keypairs (x, g^x)
-  privKey := pairing.NewZr().Rand()
-  pubKey := pairing.NewG2().PowZn(g, privKey)
+  privKey1 := pairing.NewZr().Rand()
+  pubKey1 := pairing.NewG2().PowZn(g, privKey1)
   private2 := pairing.NewZr().Rand()
   public2 := pairing.NewG2().PowZn(g, private2)
   private3 := pairing.NewZr().Rand()
   public3 := pairing.NewG2().PowZn(g, private3)
 
   // Send public keys to Bob
-  keyChannel <- pubKey.Bytes()
+  keyChannel1 <- pubKey1.Bytes()
   keyChannel2 <- public2.Bytes()
   keyChannel3 <- public3.Bytes()
 
-  // Some time later, sign a message, hashed to h, as h^x
+  // Some time later, sign a message which is hashed to h, as h^x
   message := "some text to sign"
   h := pairing.NewG1().SetFromStringHash(message, sha256.New())
 
-  signature1 := pairing.NewG2().PowZn(h, privKey)
+  signature1 := pairing.NewG2().PowZn(h, privKey1)
   signature2 := pairing.NewG2().PowZn(h, private2)
   signature3 := pairing.NewG2().PowZn(h, private3)
 
@@ -82,7 +81,7 @@ func alice(sharedParams string, sharedG []byte, messageChannel chan *messageData
   aggregate1 := pairing.NewG2().Add(signature1, signature2)
   aggregate_signature := pairing.NewG2().Add(aggregate1, signature3)
 
-  // Send the message and signature to Bob
+  // Send the message and aggregate signature to Bob
   messageChannel <- &messageData{message: message, signature: aggregate_signature.Bytes()}
 
   finished <- true
@@ -90,13 +89,13 @@ func alice(sharedParams string, sharedG []byte, messageChannel chan *messageData
 
 
 // Bob verifies a message received from Alice
-func bob(sharedParams string, sharedG []byte, messageChannel chan *messageData, keyChannel chan []byte, keyChannel2 chan []byte, keyChannel3 chan []byte, finished chan bool) {
+func bob(sharedParams string, sharedG []byte, messageChannel chan *messageData, keyChannel1 chan []byte, keyChannel2 chan []byte, keyChannel3 chan []byte, finished chan bool) {
   // Bob loads the system parameters
   pairing, _ := pbc.NewPairingFromString(sharedParams)
   g := pairing.NewG2().SetBytes(sharedG)
 
   // Bob receives Alice's public keys
-  pubKey := pairing.NewG2().SetBytes(<-keyChannel)
+  pubKey1 := pairing.NewG2().SetBytes(<-keyChannel1)
   public2 := pairing.NewG2().SetBytes(<-keyChannel2)
   public3 := pairing.NewG2().SetBytes(<-keyChannel3)
 
@@ -106,7 +105,7 @@ func bob(sharedParams string, sharedG []byte, messageChannel chan *messageData, 
 
   // To verify, Bob checks that e(h,g^x)=e(sig,g)
   h := pairing.NewG1().SetFromStringHash(data.message, sha256.New())
-  temp1 := pairing.NewGT().Pair(h, pubKey)
+  temp1 := pairing.NewGT().Pair(h, pubKey1)
   temp3 := pairing.NewGT().Pair(h, public2)
   temp4 := pairing.NewGT().Pair(h, public3)
 
@@ -114,6 +113,8 @@ func bob(sharedParams string, sharedG []byte, messageChannel chan *messageData, 
   temp := pairing.NewGT().Add(temp4, temp5)
 
   temp2 := pairing.NewGT().Pair(signature, g)
+
+  // If e(h, g^x) = e(sig, g), then print signature is verified else print signature check failed
   if !temp.Equals(temp2) {
       fmt.Println("*BUG* Signature check failed *BUG*")
   } else {
