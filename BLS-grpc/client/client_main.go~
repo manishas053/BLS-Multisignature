@@ -24,14 +24,16 @@ func main() {
 	defer conn.Close()
 	c := pb.NewSignServiceClient(conn)
 	params := pbc.GenerateA(160, 512)
-  pairing := params.NewPairing()
+  	pairing := params.NewPairing()
  	g := pairing.NewG2().Rand()
 
 	r, err := c.SignString(context.Background(), &pb.SignRequest{
+		
 
 		SharedParams : params.String(),
-  	SharedG : g.Bytes(),
+  		SharedG : g.Bytes(),
 
+		
 	})
 
 	if err != nil {
@@ -43,10 +45,10 @@ func main() {
 	public := pairing.NewG2().SetBytes(r.Publickey)
 	temp1 := pairing.NewGT().Pair(h, public)
 	temp2 := pairing.NewGT().Pair(signature, g)
-
+	
 	if !temp1.Equals(temp2) {
       		log.Println("*BUG* Signature check failed *BUG*")
-  } else {
+  	} else {
       		log.Println("Signature verified correctly")
-  }
+  	}
 }
