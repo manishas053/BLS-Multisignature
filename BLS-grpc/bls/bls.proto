@@ -22,4 +22,6 @@ message SignReply {
 message SendSignature{
     string data = 1;
     bytes signature = 2;
+    string SharedParams = 3;
+    bytes SharedG = 4;
 }
