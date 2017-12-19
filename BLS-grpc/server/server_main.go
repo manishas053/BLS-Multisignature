@@ -34,7 +34,10 @@ func (s *server) SignString(ctx context.Context, in *pb.SignRequest) (*pb.SignRe
 
 	sign := pairing.NewG2().PowZn(h, privateKey)
 	signature := sign.Bytes()
-
+	go SendSign(context.Background(), &pb.SendSignature{
+		Data: (message),
+		Signature: (signature),		
+	})	
 
 	return &pb.SignReply{Data: (message), Signature: (signature), Publickey: (public)}, nil
 
@@ -73,7 +76,8 @@ func (s *server) SendSign(ctx context.Context, in *pb.SignSignature) (*pb.SignRe
 
 	})
 
-
+	return &pb.SignReply{Data: (message), Signature: (signature), Publickey: (public)}, nil
+ 
 	/* END */
 
 
