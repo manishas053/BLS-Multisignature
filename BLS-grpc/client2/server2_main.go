@@ -20,21 +20,21 @@ const (
 
 type server struct{}
 
-func (s *server) SignString(ctx context.Context, in *pb.SendSignature, in2 *pb.SignRequest) (*pb.SignReply, error) {
+func (s *server) SendSign(ctx context.Context, in *pb.SendSignature) (*pb.SignReply, error) {
 
-	message := in.Data	
+	pairing := pbc.NewPairingFromString(in.SharedParams)
+	g := pairing.NewG2().SetBytes(in.SharedG)
+
+	message := in.Data
 	//sign_recvd := in.Signature
 	sign_recvd := pairing.NewG1().SetBytes(in.Signature)
 
-	pairing, _ := pbc.NewPairingFromString(in2.SharedParams)
-	g := pairing.NewG2().SetBytes(in2.SharedG)
-
 	privateKey := pairing.NewZr().Rand()
-  	publicKey := pairing.NewG2().PowZn(g, privateKey)
+  publicKey := pairing.NewG2().PowZn(g, privateKey)
 	public := publicKey.Bytes()
 
 	//message := "some text to sign"
-  	h := pairing.NewG1().SetFromStringHash(message, sha256.New())
+  h := pairing.NewG1().SetFromStringHash(message, sha256.New())
 
 	sign := pairing.NewG2().PowZn(h, privateKey)
 	//signature := sign.Bytes()
@@ -43,6 +43,7 @@ func (s *server) SignString(ctx context.Context, in *pb.SendSignature, in2 *pb.S
 	aggregate_sign := aggregate.Bytes()
 	return &pb.SignReply{Data: (message), Signature: (aggregate_sign), Publickey: (public)}, nil
 }
+
 
 func main() {
 	lis, err := net.Listen("tcp", port)
