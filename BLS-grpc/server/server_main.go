@@ -26,27 +26,27 @@ func (s *server) SignString(ctx context.Context, in *pb.SignRequest) (*pb.SignRe
 	g := pairing.NewG2().SetBytes(in.SharedG)
 
 	privateKey := pairing.NewZr().Rand()
-  	publicKey := pairing.NewG2().PowZn(g, privateKey)
+  publicKey := pairing.NewG2().PowZn(g, privateKey)
 	public := publicKey.Bytes()
 
 	message := "some text to sign"
-  	h := pairing.NewG1().SetFromStringHash(message, sha256.New())
+  h := pairing.NewG1().SetFromStringHash(message, sha256.New())
 
 	sign := pairing.NewG2().PowZn(h, privateKey)
 	signature := sign.Bytes()
-	go SendSign(context.Background(), &pb.SendSignature{
-		Data: (message),
-		Signature: (signature),		
-	})	
+	// go SendSign(context.Background(), &pb.SendSignature{
+	// 	Data: (message),
+	// 	Signature: (signature),
+	// })
 
-	return &pb.SignReply{Data: (message), Signature: (signature), Publickey: (public)}, nil
+	// return &pb.SignReply{Data: (message), Signature: (signature), Publickey: (public)}, nil
 
-}
+// }
 
 
 
 	/*CHANGES */
-func (s *server) SendSign(ctx context.Context, in *pb.SignSignature) (*pb.SignReply, error) {
+// func (s *server) SendSign(ctx context.Context, in *pb.SignSignature) (*pb.SignReply, error) {
 	const (
 	address = "localhost:50052"
 	)
@@ -61,23 +61,25 @@ func (s *server) SendSign(ctx context.Context, in *pb.SignSignature) (*pb.SignRe
 	/*params := pbc.GenerateA(160, 512)
   	pairing := params.NewPairing()
  	g := pairing.NewG2().Rand() */
-	message := "some text to sign"
+	// message := "some text to sign"
 
 	r, err := c.SendSign(context.Background(), &pb.SendSignature{
 
 		Data : message,
-  		Signature : signature,
+  	Signature : signature,
+		SharedParams : pairing.String(),
+		SharedG : g.Bytes(),
 
-	})
-	r1, err1 := c.SignString(context.Background(), &pb.SignRequest{
-
-		SharedParams : in.SharedParams,
-  		SharedG : in.SharedG,
-
-	})
+  })
+	// r1, err1 := c.SignString(context.Background(), &pb.SignRequest{
+	//
+	// 	SharedParams : in.SharedParams,
+  // 		SharedG : in.SharedG,
+	//
+	// })
 
 	return &pb.SignReply{Data: (message), Signature: (signature), Publickey: (public)}, nil
- 
+
 	/* END */
 
 
