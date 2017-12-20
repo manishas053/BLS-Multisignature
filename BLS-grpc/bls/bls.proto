@@ -20,8 +20,8 @@ message SignReply {
 }
 
 message SendSignature{
-    string data = 1;
-    bytes signature = 2;
-    string SharedParams = 3;
-    bytes SharedG = 4;
+    string sharedParams = 1;
+    bytes sharedG = 2;
+    string data = 3;
+    bytes signature = 4;
 }

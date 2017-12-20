@@ -20,14 +20,14 @@ const (
 
 type server struct{}
 
-func (s *server) SendSign(ctx context.Context, in *pb.SendSignature) (*pb.SignReply, error) {
+func (s *server) SendSign(ctx context.Context, in2 *pb.SendSignature) (*pb.SignReply, error) {
 
-	pairing := pbc.NewPairingFromString(in.SharedParams)
-	g := pairing.NewG2().SetBytes(in.SharedG)
+	pairing, _ := pbc.NewPairingFromString(in2.SharedParams)
+	g := pairing.NewG2().SetBytes(in2.SharedG)
 
-	message := in.Data
+	message := in2.Data
 	//sign_recvd := in.Signature
-	sign_recvd := pairing.NewG1().SetBytes(in.Signature)
+	sign_recvd := pairing.NewG1().SetBytes(in2.Signature)
 
 	privateKey := pairing.NewZr().Rand()
   publicKey := pairing.NewG2().PowZn(g, privateKey)

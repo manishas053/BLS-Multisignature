@@ -65,10 +65,10 @@ func (s *server) SignString(ctx context.Context, in *pb.SignRequest) (*pb.SignRe
 
 	r, err := c.SendSign(context.Background(), &pb.SendSignature{
 
-		Data : message,
-  	Signature : signature,
 		SharedParams : pairing.String(),
 		SharedG : g.Bytes(),
+		Data : message,
+  	Signature : signature,
 
   })
 	// r1, err1 := c.SignString(context.Background(), &pb.SignRequest{
