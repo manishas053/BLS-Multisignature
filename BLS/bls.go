@@ -103,6 +103,7 @@ func bob(sharedParams string, sharedG []byte, messageChannel chan *messageData, 
   // Some time later, Bob receives a message to verify
   data := <-messageChannel
   signature := pairing.NewG1().SetBytes(data.signature)
+  fmt.Printf("Aggregate signature: %s\n\n", signature)
 
   // To verify, Bob checks that e(h,g^x)=e(sig,g)
   h := pairing.NewG1().SetFromStringHash(data.message, sha256.New())
@@ -112,8 +113,10 @@ func bob(sharedParams string, sharedG []byte, messageChannel chan *messageData, 
 
   temp5 := pairing.NewGT().Add(temp1, temp3)
   temp := pairing.NewGT().Add(temp4, temp5)
+  fmt.Printf("e(v, h): %s\n\n", temp)
 
   temp2 := pairing.NewGT().Pair(signature, g)
+  fmt.Printf("e(g, σ): %s\n\n", temp2)
 
   // If e(h, g^x) = e(sig, g), then print signature is verified else print signature check failed
   if !temp.Equals(temp2) {
