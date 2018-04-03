@@ -4,10 +4,9 @@ import (
 	"log"
 	"net"
 
-	pb "google.golang.org/grpc/examples/bls/bls"
+	pb "github.com/manishas053/BLS-Multisignature/BLS-grpc/multi"
 	"github.com/Nik-U/pbc"
 	"crypto/sha256"
-
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 
