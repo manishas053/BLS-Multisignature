@@ -1,0 +1,44 @@
+syntax = "proto3";
+package list;
+
+service List {
+    // Adding a new nodes to the linked list
+    rpc InsertNode(NodeRequest) returns (NodeResponse) {}
+    // Printing the Linked List
+    rpc Printing(LinkRequest) returns (stream Nodes) {}
+    // Trying to get a response
+    rpc HelloRelay(NodeRequest) returns (HelloResponse) {}
+    // Sending user input funcationlity
+    rpc ProcessInput(InputMsg) returns (InputResponse) {}
+    // Linking to Linked List
+    rpc InsertInput(InputMsg) returns (InputResponse) {}
+}
+
+message InputMsg {
+    string sharedParams = 1;
+    bytes sharedG = 2;
+}
+
+message InputResponse {
+    bytes resp = 1;
+}
+
+// The data that need to be added to the list.
+message NodeRequest {
+    int32 data = 1;
+}
+
+// Success or failure message.
+message NodeResponse {
+    bool success = 1;
+}
+
+message Nodes {
+    int32 node = 1;
+}
+
+message LinkRequest {}
+
+message HelloResponse {
+    string reply = 1;
+}
