@@ -11,6 +11,8 @@ package main
 import (
   "crypto/sha256"
   "fmt"
+  "sync"
+  "time"
   "github.com/Nik-U/pbc"
   )
 
@@ -20,11 +22,18 @@ type treeNode struct{
   leftchild *treeNode
   rightchild *treeNode
   parent *treeNode
+  aggregate []byte
 }
 
 //defining a binary tree structure
 type binaryTree struct{
   root *treeNode
+}
+
+// MessageData represents a signed message sent over the network
+type messageData struct {
+  message   string
+  signature []byte
 }
 
 //function to create a new tree node
@@ -34,6 +43,7 @@ func newNode(parent *treeNode, value int) (*treeNode) {
     leftchild : nil,
     rightchild : nil,
     parent : parent,
+    aggregate : nil,
   }
   return newNode
 }
@@ -91,32 +101,72 @@ func (tree *binaryTree) printPreOrder(node *treeNode) {
   tree.printPreOrder(node.rightchild)
 }
 
-//Signature generation
-func (tree *binaryTree) signatureGeneration(parent *treeNode,sharedParams string, sharedG []byte, messageChannel chan *messageData, keyChannel1 chan []byte, keyChannel2 chan []byte, keyChannel3 chan []byte, finished chan bool)) {
+//Signature aggregation
+func (tree *binaryTree) aggregation(parent *treeNode, signature1 []byte, sharedParams string, sharedG []byte ) {
+  pairing, _ := pbc.NewPairingFromString(sharedParams)
+  // Generate keypairs (x, g^x)
+  privKey1 := pairing.NewZr().Rand()
+  message := "some text to sign"
+  h := pairing.NewG1().SetFromStringHash(message, sha256.New())
 
-  if !tree.hasLeftChild(parent) && !tree.hasRightChild(parent) {
+  signature := pairing.NewG2().PowZn(h, privKey1)
+
+  //parent.aggregate = parent.aggregate + number
+  if (tree.hasLeftChild(parent) && tree.hasRightChild(parent)) {
+    sign1 := pairing.NewG2().SetBytes(parent.leftchild.aggregate)
+    sign2 := pairing.NewG2().SetBytes(parent.rightchild.aggregate)
+    aggregate1 := pairing.NewG2().Add(sign1, sign2)
+    aggregate2 := pairing.NewG2().Add(aggregate1, signature)
+    parent.aggregate = aggregate2.Bytes()
+    fmt.Printf("%d : %d\n\n", parent.value, parent.aggregate)
+
+  } else if (tree.hasLeftChild(parent) && !tree.hasRightChild(parent)) {
+    sign1 := pairing.NewG2().SetBytes(parent.leftchild.aggregate)
+    aggregate1 := pairing.NewG2().Add(sign1, signature)
+    parent.aggregate = aggregate1.Bytes()
+    fmt.Printf("%d : %d\n\n", parent.value, parent.aggregate)
+  } else if (!tree.hasLeftChild(parent) && tree.hasRightChild(parent)) {
+    sign1 := pairing.NewG2().SetBytes(parent.rightchild.aggregate)
+    aggregate1 := pairing.NewG2().Add(sign1, signature)
+    parent.aggregate = aggregate1.Bytes()
+    fmt.Printf("%d : %d\n\n", parent.value, parent.aggregate)
+  }
+  tree.aggregation(parent.parent, parent.aggregate, sharedParams, sharedG)
+}
+
+//Signature generation
+func (tree *binaryTree) signatureGeneration(parent *treeNode,sharedParams string, sharedG []byte ) {
+  var wg sync.WaitGroup
+  wg.Add(2)
+  if (tree.hasLeftChild(parent) && tree.hasRightChild(parent)) {
+    go tree.signatureGeneration(parent.leftchild, sharedParams, sharedG)
+    go tree.signatureGeneration(parent.rightchild, sharedParams, sharedG)
+    wg.Wait()
+    time.Sleep(1000 * time.Millisecond)
+  } else if (tree.hasLeftChild(parent) && !tree.hasRightChild(parent)) {
+    tree.signatureGeneration(parent.leftchild, sharedParams, sharedG)
+  } else if (!tree.hasLeftChild(parent) && tree.hasRightChild(parent)) {
+    tree.signatureGeneration(parent.rightchild, sharedParams, sharedG)
+  } else {
     // Node loads the system parameters
     pairing, _ := pbc.NewPairingFromString(sharedParams)
-    g := pairing.NewG2().SetBytes(sharedG)
+    //g := pairing.NewG2().SetBytes(sharedG)
 
     // Generate keypairs (x, g^x)
     privKey1 := pairing.NewZr().Rand()
-    pubKey1 := pairing.NewG2().PowZn(g, privKey1
+  //  pubKey1 := pairing.NewG2().PowZn(g, privKey1)
 
     message := "some text to sign"
     h := pairing.NewG1().SetFromStringHash(message, sha256.New())
 
     signature1 := pairing.NewG2().PowZn(h, privKey1)
-  } else {
-    signatureGeneration(parent.parent, sharedParams string, sharedG []byte, messageChannel chan *messageData, keyChannel1 chan []byte, keyChannel2 chan []byte, keyChannel3 chan []byte, finished chan bool))
+    parent.aggregate = signature1.Bytes()
+    tree.aggregation(parent.parent, parent.aggregate, sharedParams, sharedG)
+    time.Sleep(500 * time.Millisecond)
   }
+  defer wg.Done()
 }
 
-// MessageData represents a signed message sent over the network
-type messageData struct {
-  message   string
-  signature []byte
-}
 
 //main function
 func main() {
@@ -145,61 +195,6 @@ func main() {
   sharedParams := params.String()
   sharedG := g.Bytes()
 
-  // Channel for messages
-  messageChannel := make(chan *messageData)
-
-  // Channels for public key distribution
-  keyChannel1 := make(chan []byte)
-  keyChannel2 := make(chan []byte)
-  keyChannel3 := make(chan []byte)
-
-  // Channel to wait until both simulations are done
-  finished := make(chan bool)
-
-  // Simulate the conversation participants
-  go alice(sharedParams, sharedG, messageChannel, keyChannel1, keyChannel2, keyChannel3, finished)
-  go bob(sharedParams, sharedG, messageChannel, keyChannel1,keyChannel2, keyChannel3, finished)
-
-  // Wait for the communication to finish
-  <-finished
-  <-finished
-
-}
-
-
-// Alice generates a keypair and signs a message
-func alice(sharedParams string, sharedG []byte, messageChannel chan *messageData, keyChannel1 chan []byte, keyChannel2 chan []byte, keyChannel3 chan []byte, finished chan bool) {
-  // Alice loads the system parameters
-  pairing, _ := pbc.NewPairingFromString(sharedParams)
-  g := pairing.NewG2().SetBytes(sharedG)
-
-  // Generate keypairs (x, g^x)
-  privKey1 := pairing.NewZr().Rand()
-  pubKey1 := pairing.NewG2().PowZn(g, privKey1)
-  private2 := pairing.NewZr().Rand()
-  public2 := pairing.NewG2().PowZn(g, private2)
-  private3 := pairing.NewZr().Rand()
-  public3 := pairing.NewG2().PowZn(g, private3)
-
-  // Send public keys to Bob
-  keyChannel1 <- pubKey1.Bytes()
-  keyChannel2 <- public2.Bytes()
-  keyChannel3 <- public3.Bytes()
-
-  // Some time later, sign a message which is hashed to h, as h^x
-  message := "some text to sign"
-  h := pairing.NewG1().SetFromStringHash(message, sha256.New())
-
-  signature1 := pairing.NewG2().PowZn(h, privKey1)
-  signature2 := pairing.NewG2().PowZn(h, private2)
-  signature3 := pairing.NewG2().PowZn(h, private3)
-
-  // Aggregate the signatures
-  aggregate1 := pairing.NewG2().Add(signature1, signature2)
-  aggregate_signature := pairing.NewG2().Add(aggregate1, signature3)
-
-  // Send the message and aggregate signature to Bob
-  messageChannel <- &messageData{message: message, signature: aggregate_signature.Bytes()}
-
-  finished <- true
+  fmt.Println("\nAggregate Signatures :")
+  tree.signatureGeneration(tree.root, sharedParams, sharedG)
 }
